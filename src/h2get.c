@@ -649,24 +649,26 @@ int h2get_conn_send_ping(struct h2get_conn *conn, char *payload, const char **er
 int h2get_conn_send_settings(struct h2get_conn *conn, struct h2get_h2_setting *settings, size_t nr_settings, const char **err)
 {
     CHECK_CONN();
-    int ret, i;
-    struct h2get_h2_header default_settings_frame = {
-        sizetoh2len(nr_settings * sizeof(*settings)), H2GET_HEADERS_SETTINGS, 0, 0, 0,
-    };
-    struct h2get_h2_setting to_send[nr_settings];
-    struct h2get_buf bufs[2];
-
-    for (i = 0; i < nr_settings; i++) {
-        to_send[i].id = htons(settings[i].id);
-        to_send[i].value = htonl(settings[i].value);
-    }
     if (conn->state < H2GET_CONN_STATE_CONNECT) {
         *err = "Not connected";
         return -1;
     }
-    bufs[0] = H2GET_BUF(&default_settings_frame, sizeof(default_settings_frame));
-    bufs[1] = H2GET_BUF(to_send, sizeof(to_send));
-    ret = conn->ops->write(conn, bufs, 2);
+    struct h2get_h2_header default_settings_frame = {
+        sizetoh2len(nr_settings * sizeof(*settings)), H2GET_HEADERS_SETTINGS, 0, 0, 0,
+    };
+    size_t nbufs = 0;
+    struct h2get_buf bufs[2];
+    bufs[nbufs++] = H2GET_BUF(&default_settings_frame, sizeof(default_settings_frame));
+    if (nr_settings > 0) {
+        // nr_settings == 0 is valid, a zero-length array is not valid in C
+        struct h2get_h2_setting to_send[nr_settings];
+        for (size_t i = 0; i < nr_settings; i++) {
+            to_send[i].id = htons(settings[i].id);
+            to_send[i].value = htonl(settings[i].value);
+        }
+        bufs[nbufs++] = H2GET_BUF(to_send, sizeof(to_send));
+    }
+    int ret = conn->ops->write(conn, bufs, nbufs);
     if (ret < 0) {
         *err = "Write failed";
         return -1;
