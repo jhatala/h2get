@@ -1,6 +1,7 @@
 #ifndef H2GET_H_
 #define H2GET_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -279,13 +280,6 @@ static inline void *memdup(void *src, size_t len)
 
 extern struct h2get_ops plain_ops;
 extern struct h2get_ops ssl_ops;
-
-#undef offsetof
-#ifdef __compiler_offsetof
-#define offsetof(TYPE,MEMBER) __compiler_offsetof(TYPE,MEMBER)
-#else
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#endif
 
 #define container_of(ptr, type, member) ({			\
 		const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
