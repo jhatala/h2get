@@ -339,7 +339,9 @@ static mrb_value create_frame(mrb_state *mrb, struct h2get_conn *conn, struct h2
     h2g_frame->conn = conn;
     h2g_frame->header = *header;
     h2g_frame->payload_len = payload->len;
-    memcpy(h2g_frame->payload, payload->buf, payload->len);
+    if (payload->len > 0) {
+        memcpy(h2g_frame->payload, payload->buf, payload->len);
+    }
 
     list_init(&h2g_frame->field_lines);
 
