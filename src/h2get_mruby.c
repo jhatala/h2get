@@ -995,7 +995,7 @@ static mrb_value h2get_mruby_frame_len(mrb_state *mrb, mrb_value self)
     struct h2get_mruby_frame *h2g_frame;
 
     h2g_frame = mrb_data_get_ptr(mrb, self, &h2get_mruby_frame_type);
-    return mrb_fixnum_value(ntohl(h2g_frame->header.len << 8));
+    return mrb_fixnum_value(ntohl((uint32_t)(h2g_frame->header.len) << 8));
 }
 
 static mrb_value h2get_mruby_frame_stream_id(mrb_state *mrb, mrb_value self)
