@@ -738,7 +738,8 @@ static mrb_value h2get_mruby_conn_send_continuation(mrb_state *mrb, mrb_value se
     header_keys = mrb_hash_keys(mrb, headers);
     mrb_int headers_len = RARRAY_LEN(header_keys);
 
-    struct h2get_buf h2_headers[headers_len * 2];
+    // zero-length arrays are UB in C
+    struct h2get_buf h2_headers[headers_len * 2 + 1];
     for (int i = 0; i < headers_len; i++) {
         mrb_value k = mrb_ary_entry(header_keys, i);
         mrb_value v = mrb_hash_get(mrb, headers, k);
